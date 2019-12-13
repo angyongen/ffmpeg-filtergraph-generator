@@ -59,21 +59,40 @@ function deleteObject(event) {
 	if (obj.parentNode) obj.parentNode.removeChild(obj) //restored obj may not be in DOM
 }
 
-document.addEventListener("drop", function(event) {
-	if (event.target.className == "droptarget") {
-	  event.preventDefault();
-		var obj = restoreBlock(event);
-		event.target.appendChild(obj)
-	}
-});
 
 document.addEventListener("dragenter", function(event) {
   //if ( event.target.className == "droptarget" ) { event.target.style.border = "3px dotted red"; }
 });
 
 // By default, data/elements cannot be dropped in other elements. To allow a drop, we must prevent the default handling of the element
-document.addEventListener("dragover", function(event) {
-	if (event.target.className == "droptarget") {
-		event.preventDefault();
+window.addEventListener("load", function() {
+var dropTargets = document.getElementsByClassName("droptarget")
+for (var i = dropTargets.length - 1; i >= 0; i--) {
+	var dropTarget = dropTargets[i]
+	dropTarget.addEventListener("dragover", function(event) {event.preventDefault();})
+	dropTarget.addEventListener("drop", function(event) {
+			event.preventDefault()
+			var obj = restoreBlock(event)
+			this.appendChild(obj)
+	});
+
+}
+})
+
+function createLine(x1, y1, x2, y2) {
+	var line = document.createElement("div")
+	line.className = "line";
+	line.style.left = x1;
+	line.style.top = y1;
+	line.style.transformOrigin =  "0 0";
+	line.style.width = Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2)) + "px"
+	line.style.border = "1px solid black"
+	var xOffset = x2 - x1;
+	var yOffset = y2 - y1;
+	var basicAngle = Math.atan(yOffset/xOffset);
+	if (xOffset < 0) {
+		basicAngle = basicAngle - Math.PI
 	}
-});
+	line.style.transform = "rotate(" + basicAngle + "rad)"
+	return line;
+}

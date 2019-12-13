@@ -1,0 +1,190 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="referrer" content="no-referrer">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<noscript>This page requires Javascript to function.</noscript>
+<div id="noscript">Javascript is loading or not working</div>
+<div id="main" style="visibility: hidden">
+	<form name="tool1">
+	INPUT
+	<textarea name="input"></textarea>
+	<div onclick="getFilterList()">create filter list from filters.texi</div>
+	OUTPUT
+	<textarea name="output"></textarea>
+	</form>
+	<form name="tool2">
+	INPUT
+	<textarea name="input"></textarea>
+	<div onclick="viewFilterList()">check the filter list</div>
+	OUTPUT
+	<select name="filterSelection"></select>
+	<select name="optionSelection"></select>
+	<pre id="viewFilterList_desc"></pre>
+	</form>
+</div>
+<script>
+	function getFilterList() {
+		var data = document.tool1.input.value
+
+		var output = [];
+		var filtergroup = []
+		var filterdesc = ""
+		var options = []
+		var optionNum = 0;
+		var state = 0;
+		var lines = data.split("\n");
+		lines.forEach(function(line) {
+			var data = line.split(" ")
+			if (data[0] == "@section") {
+				state = 0
+				if (filtergroup.length != 0) {
+					output.push({filtergroup:filtergroup, info:filterdesc, options:options})
+				}
+				filtergroup = []
+				filterdesc = ""
+				options = []
+				if (data.length == 2) {
+					filtergroup.push(data[1])
+				}
+				if (data.length > 2) {
+					for (var i = 1; i < data.length; i++) {
+						var currentFilter = data[i]
+						if (currentFilter[currentFilter.length - 1] == ",") {
+							filtergroup.push(currentFilter.slice(0, -1))
+						} else {
+							if (i == data.length - 1) {
+								filtergroup.push(currentFilter)
+							} else {
+								break;
+							}
+						}
+					}
+				}
+				if (filtergroup.length != 0) state = 1 //collect filterdesc
+			} else {
+				if (state == 1) {
+					if (line == "The filter accepts the following options:" || data[0] == "@table") {
+						options = []
+						state = 2 //wait for first @item
+					} else {
+						filterdesc += line + "\n"
+					}
+				}
+				if (data[0] == "@item" && (state == 2 || state == 3)) {
+					if (state == 3) ++optionNum;
+					if (state == 2) {
+						optionNum = 0
+						state = 3 //collect item data
+					}
+					if (state == 3) {
+						options[optionNum] = {}
+						var names = []
+						for (var i = 1; i < data.length; i++) {
+							var name = data[i]
+							if (name[name.length - 1] == ",") {
+								names.push(name.slice(0, -1))
+							} else {
+								names.push(name)
+							}
+						}
+						options[optionNum].names = names
+						options[optionNum].info = "";
+					}
+				} else {
+					if (state == 4) {
+						if (data[0] == "@end" && data[1] == "table") {
+							state = 3
+							return;
+						} else {
+							options[optionNum].info += line + "\n"
+						}
+					}
+					if (state == 3) {
+						if (data[0] == "@subsection" && data[1] == "Examples") {
+						options[optionNum].examples = ""
+						state = 6 //collect examples
+						} else {
+							if (data[0] == "@table") {
+								state = 4
+							} else {
+								if (data[0] == "@end" && data[1] == "table") return; //ignore line
+								options[optionNum].info += line + "\n"
+							}
+						}
+					}
+				}
+				if (state == 6) {
+					options[optionNum].examples += line + "\n"
+				}
+			}
+		})
+		document.tool1.output.value = JSON.stringify(output)
+	}
+	function getFilterListOnFFmpegPage(){
+		//to be run inside https://ffmpeg.org/ffmpeg-filters.html
+		var children = document.getElementsByClassName("page-content")[0].children
+		for (var i = 0; i < children.length; i++) {
+			var child = children[i]
+			if (child.tagName == "H2" || child.tagName == "H3") {
+				console.log(child)
+			}
+		}
+	}
+
+	function viewFilterList() {
+		var list = JSON.parse(document.tool2.input.value)
+
+		var filterSelection = document.tool2.filterSelection
+		var optionSelection = document.tool2.optionSelection
+		var filtergroupLookupTable = {}
+		var optionLookupTable = {}
+		list.forEach(function (item) {
+			item.filtergroup.forEach(function (filter) {
+				var option = document.createElement("option");
+				option.text = filter;
+				filtergroupLookupTable[filter] = item;
+				filterSelection.add(option); 
+			})
+		})
+		optionSelection.onchange = function() {
+			var out = document.getElementById("viewFilterList_desc")
+			var item = filtergroupLookupTable[filterSelection.value]
+			if (item && item.info) {
+				out.textContent = item.info + "\n"
+			} else {
+				out.textContent = ""
+			}
+			var option = optionLookupTable[optionSelection.value]
+			if (option && option.info) {
+				out.textContent += option.info;
+			}
+		}
+		filterSelection.onchange = function() {
+			optionSelection.innerHTML = ""
+			var item = filtergroupLookupTable[filterSelection.value]
+			if (item.options) {
+				item.options.forEach(function(availableOption) {
+					var option = document.createElement("option");
+					var names = availableOption.names
+					if (names) {
+						option.text = names.join(", ");
+						optionLookupTable[option.text] = availableOption
+						optionSelection.add(option)
+					}
+				})
+			}
+			optionSelection.dispatchEvent(new Event('change'));
+		}
+		filterSelection.dispatchEvent(new Event('change'));
+	}
+</script>
+
+<script>
+	document.getElementById("main").style.visibility = "";
+	document.getElementById("noscript").style.display = "none";
+</script>
+</body>
+</html>
