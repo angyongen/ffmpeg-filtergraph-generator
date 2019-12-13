@@ -8,7 +8,7 @@
 		table,td{border: 1px solid black;}
 		.grabbableContainer {
 			border: 1px solid black;
-			padding: 1em;
+			padding: 0.5em;
 		}
 		.obj,.block {
 			padding: 0.5em;
@@ -48,11 +48,11 @@
 			container.appendChild(obj)
 
 			var autocompleteWrapper = document.createElement('div')
-		autocompleteWrapper.className = "autocomplete-wrapper"
-		var inputCodeSelect = document.createElement('input')
-		inputCodeSelect.type = "text"
-		inputCodeSelect.placeholder = "new pad name"
-		inputCodeSelect.onchange = function() {
+			autocompleteWrapper.className = "autocomplete-wrapper"
+			var inputCodeSelect = document.createElement('input')
+			inputCodeSelect.type = "text"
+			inputCodeSelect.placeholder = "new pad name"
+			inputCodeSelect.onchange = function() {
 
 			var obj = createObjectSource();
 			obj.textContent = inputCodeSelect.value;
@@ -63,14 +63,10 @@
 		</script>
 
 <div class="droptarget" style="width: 90%;height: 90%; margin: auto; border:1px solid black;"></div>
-	<script type="text/javascript">
-		
-	</script>
 </div>
 <script type="text/javascript">
 	document.getElementById("main").style.visibility = "";
 	document.getElementById("noscript").style.display = "none";
-
 </script>
 </body>
 </html>
