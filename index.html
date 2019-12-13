@@ -1,0 +1,76 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="referrer" content="no-referrer">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style type="text/css">
+		table { border-spacing: 0;}
+		table,td{border: 1px solid black;}
+		.grabbableContainer {
+			border: 1px solid black;
+			padding: 1em;
+		}
+		.obj,.block {
+			padding: 0.5em;
+			margin: 0.5em;
+			border: 1px solid black;
+			cursor: all-scroll;
+		}
+		.obj {
+			display: inline-block;
+		}
+		.block {
+			position: absolute;
+		}
+	</style>
+	<link rel="stylesheet" type="text/css" href="./autocomplete.css">
+	<script type="text/javascript" src="./autocomplete.js"></script>
+	<script type="text/javascript" src="./ui.js"></script>
+</head>
+<body>
+<noscript>This page requires Javascript to function.</noscript>
+<div id="noscript">Javascript is not working</div>
+<div id="main" style="visibility: hidden">
+
+		<script>
+			var container = document.createElement("div")
+			container.className = "grabbableContainer"
+			container.addEventListener("dragover", function(event) {event.preventDefault();}); // allow drag
+			container.addEventListener("drop", function(event) {deleteObject(event)});
+			document.getElementById("main").appendChild(container)
+
+			var obj = createObjectSource();
+			obj.textContent = "0:a"
+			container.appendChild(obj)
+
+			var obj = createObjectSource();
+			obj.textContent = "0:v"
+			container.appendChild(obj)
+
+			var autocompleteWrapper = document.createElement('div')
+		autocompleteWrapper.className = "autocomplete-wrapper"
+		var inputCodeSelect = document.createElement('input')
+		inputCodeSelect.type = "text"
+		inputCodeSelect.placeholder = "new pad name"
+		inputCodeSelect.onchange = function() {
+
+			var obj = createObjectSource();
+			obj.textContent = inputCodeSelect.value;
+			container.insertBefore(obj, autocompleteWrapper)
+		}
+		autocompleteWrapper.appendChild(inputCodeSelect);
+		container.appendChild(autocompleteWrapper);
+		</script>
+
+<div class="droptarget" style="width: 90%;height: 90%; margin: auto; border:1px solid black;"></div>
+	<script type="text/javascript">
+		
+	</script>
+</div>
+<script type="text/javascript">
+	document.getElementById("main").style.visibility = "";
+	document.getElementById("noscript").style.display = "none";
+
+</script>
+</body>
+</html>
